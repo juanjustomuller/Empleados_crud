@@ -2,6 +2,8 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Swal from 'sweetalert2';
+
 
 function App() {
   const [nombre, setNombre] = useState("");
@@ -26,8 +28,20 @@ function App() {
       })
       .then(() => {
         getEmpleados();
-        alert("Empleado registrado!");
-        limpiarCampos()
+        //alert("Empleado registrado!");
+        limpiarCampos();
+        Swal.fire({
+          title: "<strong>Registro exitoso!!</strong>",
+          html: "<i>El empleado <strong>" + nombre + "</strong> fue registrado con exito!</i>",
+          icon: 'success',
+          timer:3000
+        }).catch(function(error) {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: JSON.parse(JSON.stringify(error)).message==="Network Error"?"Intente mas tarde":JSON.parse(JSON.stringify(error))
+          });
+        });
       });
   };
 
@@ -43,9 +57,55 @@ function App() {
       })
       .then(() => {
         getEmpleados();
-        alert("Updated!");
+        //alert("Updated!");
         limpiarCampos()
+        Swal.fire({
+          title: "<strong>Actualizacion exitosa!!</strong>",
+          html: "<i>El empleado <strong>" + nombre + "</strong> fue actualizado con exito!</i>",
+          icon: 'success',
+          timer:3000
+        }).catch(function(error) {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: JSON.parse(JSON.stringify(error)).message==="Network Error"?"Intente mas tarde":JSON.parse(JSON.stringify(error))
+          });
+        });
       });
+  };
+
+  const deleteEmple = (val) => {
+    Swal.fire({
+      title: "Confirmar eliminado?",
+      html: "<i>Realmente desea eliminar a <strong>" + val.nombre + "</strong>?</i>",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Si, eliminarlo!"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+        .delete(`http://localhost:3001/delete/${val.id}`)
+        .then(() => {
+          getEmpleados();
+          //alert("Updated!");
+          limpiarCampos();
+          Swal.fire({
+            text: val.nombre + " fue eliminado",
+            icon: "success",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+        }).catch(function(error) {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: JSON.parse(JSON.stringify(error)).message==="Network Error"?"Intente mas tarde":JSON.parse(JSON.stringify(error))
+          });
+        });
+      }
+    });
   };
 
   const limpiarCampos = () => {
@@ -212,7 +272,7 @@ function App() {
                     >
                       Editar
                     </button>
-                    <button type="button" className="btn btn-danger">
+                    <button type="button" onClick={() => {deleteEmple(val)}} className="btn btn-danger">
                       Eliminar
                     </button>
                   </div>
